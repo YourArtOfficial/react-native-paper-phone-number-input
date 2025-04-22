@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isIOS } from './constants';
 import { countries } from './data/countries';
+import translatedCountries from './data/translatedCountries';
 import type { PhoneNumberInputProps, PhoneNumberInputRef, RNPaperTextInputRef } from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
@@ -36,6 +37,10 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
       editable = true,
       keyboardType,
       theme,
+      lang = 'fr',
+      searchLabel = '',
+      countryLabel = '',
+      dialCodeLabel = '',
       // rest of the props
       ...rest
     },
@@ -173,6 +178,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
           theme={themeWithFlagsFont}
           maxLength={limitMaxLength ? baselineLength + country.length : undefined}
         />
+
         <TouchableRipple
           disabled={disabled || !editable}
           style={[styles.ripple, { width }]}
@@ -201,7 +207,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
               <IconButton icon="arrow-left" onPress={() => setVisible(false)} theme={theme} />
               <Searchbar
                 style={styles.searchbar}
-                placeholder="Search"
+                placeholder={searchLabel}
                 onChangeText={setSearchQuery}
                 value={searchQuery}
                 ref={searchbarRef}
@@ -215,9 +221,9 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
             </View>
             <DataTable style={styles.flex1}>
               <DataTable.Header theme={theme}>
-                <DataTable.Title theme={theme}>Country</DataTable.Title>
+                <DataTable.Title theme={theme}>{countryLabel}</DataTable.Title>
                 <DataTable.Title numeric theme={theme}>
-                  Dial Code
+                  {dialCodeLabel}
                 </DataTable.Title>
               </DataTable.Header>
               <FlatList
@@ -233,9 +239,9 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
                     }}
                     theme={theme}
                   >
-                    <DataTable.Cell
-                      theme={themeWithFlagsFont}
-                    >{`${item.flag}     ${item.name}`}</DataTable.Cell>
+                    <DataTable.Cell theme={themeWithFlagsFont}>{`${
+                      item.flag
+                    }     ${translatedCountries.getName(item.code, lang)}`}</DataTable.Cell>
                     <DataTable.Cell numeric theme={theme}>
                       {item.dialCode}
                     </DataTable.Cell>

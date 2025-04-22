@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isIOS } from './constants';
 import { countries } from './data/countries';
+import translatedCountries from './data/translatedCountries';
 import type { CountryPickerProps, CountryPickerRef, RNPaperTextInputRef } from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
@@ -39,6 +40,9 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
       disabled,
       editable = true,
       theme,
+      lang = 'fr',
+      placeholder = '',
+      searchLabel = '',
       // rest of the props
       ...rest
     },
@@ -123,16 +127,16 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
 
     const value = useMemo(() => {
       if (country) {
-        return `${countryFlag} ${country}`;
+        return `${countryFlag} ${translatedCountries.getName(country, lang)}`;
       }
 
-      return 'Please select a country';
+      return placeholder;
     }, [country, countryFlag]);
 
     useEffect(() => {
       if (country) {
         const matchedCountry = countries.find(
-          (c) => c.name.toLocaleLowerCase() === country.toLocaleLowerCase()
+          (c) => c.code.toLocaleLowerCase() === country.toLocaleLowerCase()
         );
 
         if (matchedCountry) {
@@ -148,7 +152,6 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
           {...rest}
           disabled={disabled}
           editable={editable}
-          onChangeText={setCountry}
           value={value}
           theme={themeWithFlagsFont}
         />
@@ -181,7 +184,7 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
               <IconButton icon="arrow-left" onPress={() => setVisible(false)} theme={theme} />
               <Searchbar
                 style={styles.searchbar}
-                placeholder="Search"
+                placeholder={searchLabel}
                 onChangeText={setSearchQuery}
                 value={searchQuery}
                 ref={searchbarRef}
@@ -201,15 +204,15 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
                 renderItem={({ item }) => (
                   <DataTable.Row
                     onPress={() => {
-                      setCountry(item.name);
+                      setCountry(item.code);
                       setCountryFlag(item.flag);
                       setVisible(false);
                     }}
                     theme={theme}
                   >
-                    <DataTable.Cell
-                      theme={themeWithFlagsFont}
-                    >{`${item.flag}     ${item.name}`}</DataTable.Cell>
+                    <DataTable.Cell theme={themeWithFlagsFont}>{`${
+                      item.flag
+                    }     ${translatedCountries.getName(item.code, lang)}`}</DataTable.Cell>
                   </DataTable.Row>
                 )}
               />

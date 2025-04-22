@@ -24,6 +24,11 @@ export interface PhoneNumberInputProps extends Omit<TextInputProps, 'value' | 'o
   limitMaxLength?: boolean;
   modalStyle?: StyleProp<ViewStyle>;
   modalContainerStyle?: StyleProp<ViewStyle>;
+  lang?: string;
+  placeholder?: string;
+  searchLabel?: string;
+  countryLabel?: string;
+  dialCodeLabel?: string;
 }
 
 export interface CountryPickerRef {
@@ -39,4 +44,7 @@ export interface CountryPickerProps extends Omit<TextInputProps, 'value' | 'onCh
   showFirstOnList?: string[];
   modalStyle?: StyleProp<ViewStyle>;
   modalContainerStyle?: StyleProp<ViewStyle>;
+  lang?: string;
+  placeholder?: string;
+  searchLabel?: string;
 }
