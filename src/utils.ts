@@ -7,3 +7,11 @@ export const getCountryByCode = (code: string = '##') => {
   }
   return country;
 };
+
+export const getDialCodeByCode = (code: string = '##') => {
+  const country = countriesMap[code];
+  if (!country) {
+    throw new Error(`Country with code ${code} not found`);
+  }
+  return country.dialCode;
+};
