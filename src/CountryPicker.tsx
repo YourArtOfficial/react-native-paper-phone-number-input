@@ -143,7 +143,7 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
           setCountryFlag(matchedCountry.flag);
         }
       }
-    }, []);
+    }, [country]);
 
     return (
       <View>
