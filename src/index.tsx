@@ -7,4 +7,4 @@ export type {
   PhoneNumberInputProps,
   PhoneNumberInputRef,
 } from './types';
-export { getCountryByCode, getDialCodeByCode } from './utils';
+export { extractPhoneInfo, getCountryByCode, getDialCodeByCode } from './utils';

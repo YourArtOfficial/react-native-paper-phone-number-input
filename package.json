@@ -82,7 +82,8 @@
     ]
   },
   "dependencies": {
-    "i18n-iso-countries": "^7.14.0"
+    "i18n-iso-countries": "^7.14.0",
+    "libphonenumber-js": "^1.12.7"
   },
   "directories": {
     "example": "example"

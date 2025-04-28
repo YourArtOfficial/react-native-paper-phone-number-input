@@ -1,3 +1,4 @@
+import type { CountryCode } from 'libphonenumber-js';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import {
@@ -17,7 +18,7 @@ import translatedCountries from './data/translatedCountries';
 import type { PhoneNumberInputProps, PhoneNumberInputRef, RNPaperTextInputRef } from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
-import { getCountryByCode } from './utils';
+import { getCountryByCode, liveFormatPhoneNumber } from './utils';
 
 export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInputProps>(
   (
@@ -63,8 +64,8 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
     const searchbarRef = useRef<RNPaperTextInputRef>(null);
 
     const onChangePhoneNumber = (text: string) => {
-      const value = text.split(' ')[2];
-      setPhoneNumber(value);
+      const phoneNumber = text.split(' ').slice(2).join(' ');
+      setPhoneNumber(phoneNumber);
     };
 
     const openModal = () => {
@@ -173,7 +174,10 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
           disabled={disabled}
           editable={editable}
           onChangeText={onChangePhoneNumber}
-          value={`${country.flag} ${country.dialCode} ${phoneNumber}`}
+          value={`${country.flag} ${country.dialCode} ${liveFormatPhoneNumber(
+            phoneNumber,
+            code as CountryCode
+          )}`}
           keyboardType={keyboardType || 'phone-pad'}
           theme={themeWithFlagsFont}
           maxLength={limitMaxLength ? baselineLength + country.length : undefined}
