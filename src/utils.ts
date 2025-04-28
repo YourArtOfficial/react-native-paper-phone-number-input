@@ -26,7 +26,7 @@ export const extractPhoneInfo = (input: string) => {
   }
   return {
     dialCode: phoneNumber.countryCallingCode,
-    nationalNumber: phoneNumber.nationalNumber,
+    nationalNumber: phoneNumber.formatNational(),
     code: phoneNumber.country,
   };
 };
