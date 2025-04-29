@@ -6,7 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Platform, PlatformColor, StyleSheet, View } from 'react-native';
 import {
   DataTable,
   IconButton,
@@ -194,6 +194,10 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
                   }
                 }}
                 theme={theme}
+                selectionColor={Platform.select({
+                  ios: PlatformColor('systemBlue') as unknown as string,
+                  android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                })}
               />
             </View>
             <DataTable style={styles.flex1}>

@@ -1,6 +1,6 @@
 import type { CountryCode } from 'libphonenumber-js';
 import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Platform, PlatformColor, StyleSheet, View } from 'react-native';
 import {
   DataTable,
   IconButton,
@@ -11,6 +11,7 @@ import {
   TextInput,
   TouchableRipple,
 } from 'react-native-paper';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isIOS } from './constants';
 import { countries } from './data/countries';
@@ -181,6 +182,13 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
           keyboardType={keyboardType || 'phone-pad'}
           theme={themeWithFlagsFont}
           maxLength={limitMaxLength ? baselineLength + country.length : undefined}
+          selectionColor={Platform.select({
+            ios: PlatformColor('systemBlue') as unknown as string,
+            android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+          })}
+          cursorColor={Platform.select({
+            android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+          })}
         />
 
         <TouchableRipple
@@ -221,6 +229,10 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
                   }
                 }}
                 theme={theme}
+                selectionColor={Platform.select({
+                  ios: PlatformColor('systemBlue') as unknown as string,
+                  android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                })}
               />
             </View>
             <DataTable style={styles.flex1}>
