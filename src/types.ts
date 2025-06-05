@@ -29,6 +29,8 @@ export interface PhoneNumberInputProps extends Omit<TextInputProps, 'value' | 'o
   searchLabel?: string;
   countryLabel?: string;
   dialCodeLabel?: string;
+  error?: any;
+  ErrorIcon?: any;
 }
 
 export interface CountryPickerRef {
