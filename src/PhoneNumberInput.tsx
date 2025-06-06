@@ -43,7 +43,8 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
       searchLabel = '',
       countryLabel = '',
       dialCodeLabel = '',
-      inputRightIcon = undefined,
+      error = false,
+      errorIcon = undefined,
       // rest of the props
       ...rest
     },
@@ -190,7 +191,7 @@ export const PhoneNumberInput = forwardRef<PhoneNumberInputRef, PhoneNumberInput
           cursorColor={Platform.select({
             android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
           })}
-          right={inputRightIcon}
+          right={error && <TextInput.Icon icon={() => errorIcon} disabled />}
         />
 
         <TouchableRipple
