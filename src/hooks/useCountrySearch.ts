@@ -15,19 +15,22 @@ interface UseCountrySearchProps {
   lang: string;
 }
 
+const removeAccents = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
 export const useCountrySearch = ({ searchQuery, countriesList, lang }: UseCountrySearchProps) => {
   return useMemo(() => {
     if (!searchQuery) {
       return countriesList;
     }
 
-    const lowerCaseQuery = searchQuery.toLowerCase();
+    const lowerCaseQuery = removeAccents(searchQuery.toLowerCase());
 
     const filteredAndSorted = countriesList
       .map((country) => {
-        const translatedName =
+        const translatedName = removeAccents(
           translatedCountries.getName(country.code, lang)?.toLowerCase() ||
-          country.name.toLowerCase();
+            country.name.toLowerCase()
+        );
         const lowerCaseCode = country.code.toLowerCase();
         const dialCode = country.dialCode;
 
