@@ -1,29 +1,36 @@
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  Platform,
+  PlatformColor,
+  TextInput as RNTextInput,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   DataTable,
   IconButton,
   Modal,
   Portal,
-  Searchbar,
   Text,
   TextInput,
   TouchableRipple,
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isIOS } from './constants';
 import { countries } from './data/countries';
-import type { CountryPickerProps, CountryPickerRef, RNPaperTextInputRef } from './types';
+import translatedCountries from './data/translatedCountries';
+import { useCountriesList, useCountrySearch } from './hooks';
+import type { CountryPickerProps, CountryPickerRef } from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
-import { getCountryByCode } from './utils';
 
 export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
   (
@@ -39,6 +46,9 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
       disabled,
       editable = true,
       theme,
+      lang = 'fr',
+      placeholder = '',
+      searchLabel = '',
       // rest of the props
       ...rest
     },
@@ -51,95 +61,107 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
     // States for the modal
     const [visible, setVisible] = useState(false);
 
-    const [countryFlag, setCountryFlag] = useState('');
+    const countryFlag = useMemo(() => {
+      if (country) {
+        const matchedCountry = countries.find(
+          (c) => c.code.toLocaleLowerCase() === country.toLocaleLowerCase()
+        );
+        return matchedCountry?.flag;
+      }
+      return undefined;
+    }, [country]);
 
     // States for the searchbar
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
-    const searchbarRef = useRef<RNPaperTextInputRef>(null);
+    const searchbarRef = useRef<RNTextInput>(null);
 
-    const openModal = () => {
+    const openModal = useCallback(() => {
       setVisible(true);
-      setTimeout(() => {
-        searchbarRef.current?.focus();
-      }, 100);
-    };
+    }, []);
 
-    useImperativeHandle(ref, () => ({
-      openCountryPicker: openModal,
-      closeCountryPicker: () => setVisible(false),
-    }));
+    const closeModal = useCallback(() => {
+      setVisible(false);
+    }, []);
 
-    const countriesList = useMemo(() => {
-      // By default, show all countries.
-      let filteredCountries = countries;
-
-      // First filter the countries based on the includeCountries.
-      if (Array.isArray(includeCountries) && includeCountries.length > 0) {
-        filteredCountries = includeCountries.map((code) => ({
-          ...getCountryByCode(code),
-          code,
-        }));
+    // Focus the search bar when the modal becomes visible
+    useEffect(() => {
+      if (visible) {
+        // We need a small delay to ensure the modal is fully animated and the search bar is rendered
+        setTimeout(() => {
+          searchbarRef.current?.focus();
+        }, 100);
       }
+    }, [visible]);
 
-      // If showFirstOnList is provided, show those countries on top of the list.
-      if (Array.isArray(showFirstOnList) && showFirstOnList.length > 0) {
-        // If the country is not in the includeCountries, do not show it.
-        // This is to prevent showing countries that are not in the includeCountries list.
-        const countriesToShowOnTop = filteredCountries.filter((country) =>
-          showFirstOnList.includes(country.code)
-        );
+    useImperativeHandle(
+      ref,
+      () => ({
+        openCountryPicker: openModal,
+        closeCountryPicker: closeModal,
+      }),
+      [openModal, closeModal]
+    );
 
-        filteredCountries = countriesToShowOnTop.concat(
-          // Filter out the countries that are already shown on top.
-          filteredCountries.filter((country) => !showFirstOnList.includes(country.code))
-        );
-      }
+    const countriesList = useCountriesList({
+      showFirstOnList,
+      includeCountries,
+      excludeCountries,
+    });
 
-      // If excludeCountries is provided, filter out those countries.
-      if (Array.isArray(excludeCountries) && excludeCountries.length > 0) {
-        filteredCountries = filteredCountries.filter(
-          (country) => !excludeCountries.includes(country.code)
-        );
-      }
+    const searchResult = useCountrySearch({
+      searchQuery: debouncedSearchQuery,
+      countriesList,
+      lang,
+    });
 
-      return filteredCountries;
-    }, [showFirstOnList, includeCountries, excludeCountries]);
+    const handleCountrySelect = useCallback(
+      (selectedCountry: { code: string }) => {
+        setCountry(selectedCountry.code);
+        closeModal();
+      },
+      [setCountry, closeModal]
+    );
 
-    const searchResult = useMemo(() => {
-      if (!debouncedSearchQuery) {
-        return countriesList;
-      }
+    const renderCountryItem = useCallback(
+      ({ item }: { item: any }) => (
+        <DataTable.Row onPress={() => handleCountrySelect(item)} theme={theme}>
+          <DataTable.Cell theme={themeWithFlagsFont}>
+            {`${item.flag}     ${translatedCountries.getName(item.code, lang) || item.name}`}
+          </DataTable.Cell>
+        </DataTable.Row>
+      ),
+      [handleCountrySelect, theme, themeWithFlagsFont, lang]
+    );
 
-      return countriesList.filter((country) => {
-        return (
-          (debouncedSearchQuery.length < 3 &&
-            country.code.toLocaleLowerCase().includes(debouncedSearchQuery.toLocaleLowerCase())) ||
-          country.name.toLocaleLowerCase().includes(debouncedSearchQuery.toLocaleLowerCase())
-        );
-      });
-    }, [debouncedSearchQuery, countriesList]);
+    const keyExtractor = useCallback((item: any) => item.code, []);
 
     const value = useMemo(() => {
-      if (country) {
-        return `${countryFlag} ${country}`;
+      if (country && countryFlag) {
+        return `${countryFlag} ${translatedCountries.getName(country, lang)}`;
       }
 
-      return 'Please select a country';
-    }, [country, countryFlag]);
+      return placeholder;
+    }, [country, countryFlag, lang, placeholder]);
 
-    useEffect(() => {
-      if (country) {
-        const matchedCountry = countries.find(
-          (c) => c.name.toLocaleLowerCase() === country.toLocaleLowerCase()
-        );
-
-        if (matchedCountry) {
-          setCountryFlag(matchedCountry.flag);
-        }
-      }
-    }, []);
+    // Dynamic styles based on theme
+    const dynamicStyles = useMemo(
+      () => ({
+        searchbar: {
+          flex: 1,
+        },
+        searchbarContent: {
+          backgroundColor: 'transparent',
+          fontSize: 16,
+        },
+        outlined: {
+          borderRadius: 30,
+          borderColor: theme?.dark ? '#343740' : '#CBD5E1',
+        },
+      }),
+      [theme]
+    );
 
     return (
       <View>
@@ -148,7 +170,6 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
           {...rest}
           disabled={disabled}
           editable={editable}
-          onChangeText={setCountry}
           value={value}
           theme={themeWithFlagsFont}
         />
@@ -174,46 +195,53 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
               modalContainerStyle,
             ]}
             visible={visible}
-            onDismiss={() => setVisible(false)}
+            onDismiss={closeModal}
             theme={theme}
           >
-            <View style={styles.searchbox}>
-              <IconButton icon="arrow-left" onPress={() => setVisible(false)} theme={theme} />
-              <Searchbar
-                style={styles.searchbar}
-                placeholder="Search"
-                onChangeText={setSearchQuery}
-                value={searchQuery}
-                ref={searchbarRef}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === 'Escape') {
-                    setVisible(false);
-                  }
-                }}
-                theme={theme}
-              />
+            <View style={styles.modalContainer}>
+              <View style={styles.searchbox}>
+                <IconButton icon="arrow-left" onPress={closeModal} theme={theme} />
+                <TextInput
+                  style={[styles.searchbar, dynamicStyles.searchbar]}
+                  placeholder={searchLabel}
+                  onChangeText={setSearchQuery}
+                  value={searchQuery}
+                  ref={searchbarRef}
+                  mode="outlined"
+                  dense
+                  theme={theme}
+                  onKeyPress={({ nativeEvent }) => {
+                    if (nativeEvent.key === 'Escape') {
+                      closeModal();
+                    }
+                  }}
+                  selectionColor={Platform.select({
+                    ios: PlatformColor('systemBlue') as unknown as string,
+                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                  })}
+                  cursorColor={Platform.select({
+                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                  })}
+                  left={<TextInput.Icon icon="magnify" size={20} style={styles.searchIcon} />}
+                  underlineStyle={styles.searchbarUnderline}
+                  contentStyle={[styles.searchbarContent, dynamicStyles.searchbarContent]}
+                  outlineStyle={[styles.outlined, dynamicStyles.outlined]}
+                />
+              </View>
+              <DataTable style={styles.flex1}>
+                <FlatList
+                  keyboardShouldPersistTaps="handled"
+                  data={searchResult}
+                  keyExtractor={keyExtractor}
+                  renderItem={renderCountryItem}
+                  removeClippedSubviews={true}
+                  maxToRenderPerBatch={20}
+                  updateCellsBatchingPeriod={50}
+                  initialNumToRender={15}
+                  windowSize={10}
+                />
+              </DataTable>
             </View>
-            <DataTable style={styles.flex1}>
-              <FlatList
-                keyboardShouldPersistTaps="handled"
-                data={searchResult}
-                keyExtractor={(item) => item.code}
-                renderItem={({ item }) => (
-                  <DataTable.Row
-                    onPress={() => {
-                      setCountry(item.name);
-                      setCountryFlag(item.flag);
-                      setVisible(false);
-                    }}
-                    theme={theme}
-                  >
-                    <DataTable.Cell
-                      theme={themeWithFlagsFont}
-                    >{`${item.flag}     ${item.name}`}</DataTable.Cell>
-                  </DataTable.Row>
-                )}
-              />
-            </DataTable>
           </Modal>
         </Portal>
       </View>
@@ -230,7 +258,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   flex1: {
-    flex: isIOS ? undefined : 1,
+    flex: 1,
   },
   modal: {
     marginTop: undefined,
@@ -239,8 +267,7 @@ const styles = StyleSheet.create({
   },
   countries: {
     paddingHorizontal: 16,
-    flex: isIOS ? undefined : 1,
-    marginBottom: isIOS ? 150 : undefined,
+    flex: 1,
     justifyContent: undefined,
   },
   searchbox: {
@@ -248,6 +275,21 @@ const styles = StyleSheet.create({
   },
   searchbar: {
     flex: 1,
-    alignItems: 'center',
+  },
+  searchbarContent: {
+    backgroundColor: 'transparent',
+  },
+  searchbarUnderline: {
+    display: 'none',
+  },
+  outlined: {
+    borderRadius: 30,
+  },
+  searchIcon: {
+    alignSelf: 'center',
+    marginTop: 15,
+  },
+  modalContainer: {
+    height: '100%',
   },
 });

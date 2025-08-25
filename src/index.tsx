@@ -1,10 +1,10 @@
-export { PhoneNumberInput } from './PhoneNumberInput';
+export { defaultFlagsFont } from './constants';
 export { CountryPicker } from './CountryPicker';
+export { PhoneNumberInput } from './PhoneNumberInput';
 export type {
-  PhoneNumberInputProps,
-  PhoneNumberInputRef,
   CountryPickerProps,
   CountryPickerRef,
+  PhoneNumberInputProps,
+  PhoneNumberInputRef,
 } from './types';
-export { getCountryByCode } from './utils';
-export { defaultFlagsFont } from './constants';
+export { extractPhoneInfo, getCountryByCode, getDialCodeByCode } from './utils';
