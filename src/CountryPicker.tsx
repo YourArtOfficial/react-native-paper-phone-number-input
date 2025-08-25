@@ -25,7 +25,6 @@ import {
   TouchableRipple,
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isIOS } from './constants';
 import { countries } from './data/countries';
 import translatedCountries from './data/translatedCountries';
 import { useCountriesList, useCountrySearch } from './hooks';
@@ -199,48 +198,50 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
             onDismiss={closeModal}
             theme={theme}
           >
-            <View style={styles.searchbox}>
-              <IconButton icon="arrow-left" onPress={closeModal} theme={theme} />
-              <TextInput
-                style={[styles.searchbar, dynamicStyles.searchbar]}
-                placeholder={searchLabel}
-                onChangeText={setSearchQuery}
-                value={searchQuery}
-                ref={searchbarRef}
-                mode="outlined"
-                dense
-                theme={theme}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === 'Escape') {
-                    closeModal();
-                  }
-                }}
-                selectionColor={Platform.select({
-                  ios: PlatformColor('systemBlue') as unknown as string,
-                  android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
-                })}
-                cursorColor={Platform.select({
-                  android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
-                })}
-                left={<TextInput.Icon icon="magnify" size={20} style={styles.searchIcon} />}
-                underlineStyle={styles.searchbarUnderline}
-                contentStyle={[styles.searchbarContent, dynamicStyles.searchbarContent]}
-                outlineStyle={[styles.outlined, dynamicStyles.outlined]}
-              />
+            <View style={styles.modalContainer}>
+              <View style={styles.searchbox}>
+                <IconButton icon="arrow-left" onPress={closeModal} theme={theme} />
+                <TextInput
+                  style={[styles.searchbar, dynamicStyles.searchbar]}
+                  placeholder={searchLabel}
+                  onChangeText={setSearchQuery}
+                  value={searchQuery}
+                  ref={searchbarRef}
+                  mode="outlined"
+                  dense
+                  theme={theme}
+                  onKeyPress={({ nativeEvent }) => {
+                    if (nativeEvent.key === 'Escape') {
+                      closeModal();
+                    }
+                  }}
+                  selectionColor={Platform.select({
+                    ios: PlatformColor('systemBlue') as unknown as string,
+                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                  })}
+                  cursorColor={Platform.select({
+                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                  })}
+                  left={<TextInput.Icon icon="magnify" size={20} style={styles.searchIcon} />}
+                  underlineStyle={styles.searchbarUnderline}
+                  contentStyle={[styles.searchbarContent, dynamicStyles.searchbarContent]}
+                  outlineStyle={[styles.outlined, dynamicStyles.outlined]}
+                />
+              </View>
+              <DataTable style={styles.flex1}>
+                <FlatList
+                  keyboardShouldPersistTaps="handled"
+                  data={searchResult}
+                  keyExtractor={keyExtractor}
+                  renderItem={renderCountryItem}
+                  removeClippedSubviews={true}
+                  maxToRenderPerBatch={20}
+                  updateCellsBatchingPeriod={50}
+                  initialNumToRender={15}
+                  windowSize={10}
+                />
+              </DataTable>
             </View>
-            <DataTable style={styles.flex1}>
-              <FlatList
-                keyboardShouldPersistTaps="handled"
-                data={searchResult}
-                keyExtractor={keyExtractor}
-                renderItem={renderCountryItem}
-                removeClippedSubviews={true}
-                maxToRenderPerBatch={20}
-                updateCellsBatchingPeriod={50}
-                initialNumToRender={15}
-                windowSize={10}
-              />
-            </DataTable>
           </Modal>
         </Portal>
       </View>
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   flex1: {
-    flex: isIOS ? undefined : 1,
+    flex: 1,
   },
   modal: {
     marginTop: undefined,
@@ -266,8 +267,7 @@ const styles = StyleSheet.create({
   },
   countries: {
     paddingHorizontal: 16,
-    flex: isIOS ? undefined : 1,
-    marginBottom: isIOS ? 150 : undefined,
+    flex: 1,
     justifyContent: undefined,
   },
   searchbox: {
@@ -288,5 +288,8 @@ const styles = StyleSheet.create({
   searchIcon: {
     alignSelf: 'center',
     marginTop: 15,
+  },
+  modalContainer: {
+    height: '100%',
   },
 });

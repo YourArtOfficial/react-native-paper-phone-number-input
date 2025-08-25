@@ -28,7 +28,6 @@ import {
 } from 'react-native-paper';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isIOS } from './constants';
 import translatedCountries from './data/translatedCountries';
 import { useCountriesList, useCountrySearch } from './hooks';
 import type { PhoneNumberInputProps, PhoneNumberInputRef, RNPaperTextInputRef } from './types';
@@ -325,50 +324,52 @@ export const PhoneNumberInput = memo(
               onDismiss={closeModal}
               theme={theme}
             >
-              <View style={styles.searchbox}>
-                <IconButton icon="arrow-left" onPress={closeModal} theme={theme} />
-                <TextInput
-                  style={[styles.searchbar, dynamicStyles.searchbar]}
-                  placeholder={searchLabel}
-                  onChangeText={onChangeSearchQuery}
-                  value={searchQuery}
-                  ref={searchbarRef}
-                  mode="outlined"
-                  dense
-                  theme={theme}
-                  onKeyPress={onKeyPress}
-                  selectionColor={Platform.select({
-                    ios: PlatformColor('systemBlue') as unknown as string,
-                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
-                  })}
-                  cursorColor={Platform.select({
-                    android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
-                  })}
-                  left={<TextInput.Icon icon="magnify" size={20} style={styles.searchIcon} />}
-                  underlineStyle={styles.searchbarUnderline}
-                  contentStyle={[styles.searchbarContent, dynamicStyles.searchbarContent]}
-                  outlineStyle={[styles.outlined, dynamicStyles.outlined]}
-                />
+              <View style={styles.modalContainer}>
+                <View style={styles.searchbox}>
+                  <IconButton icon="arrow-left" onPress={closeModal} theme={theme} />
+                  <TextInput
+                    style={[styles.searchbar, dynamicStyles.searchbar]}
+                    placeholder={searchLabel}
+                    onChangeText={onChangeSearchQuery}
+                    value={searchQuery}
+                    ref={searchbarRef}
+                    mode="outlined"
+                    dense
+                    theme={theme}
+                    onKeyPress={onKeyPress}
+                    selectionColor={Platform.select({
+                      ios: PlatformColor('systemBlue') as unknown as string,
+                      android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                    })}
+                    cursorColor={Platform.select({
+                      android: PlatformColor('@android:color/holo_blue_light') as unknown as string,
+                    })}
+                    left={<TextInput.Icon icon="magnify" size={20} style={styles.searchIcon} />}
+                    underlineStyle={styles.searchbarUnderline}
+                    contentStyle={[styles.searchbarContent, dynamicStyles.searchbarContent]}
+                    outlineStyle={[styles.outlined, dynamicStyles.outlined]}
+                  />
+                </View>
+                <DataTable style={styles.flex1}>
+                  <DataTable.Header theme={theme}>
+                    <DataTable.Title theme={theme}>{countryLabel}</DataTable.Title>
+                    <DataTable.Title numeric theme={theme}>
+                      {dialCodeLabel}
+                    </DataTable.Title>
+                  </DataTable.Header>
+                  <FlatList
+                    keyboardShouldPersistTaps="handled"
+                    data={searchResult}
+                    keyExtractor={keyExtractor}
+                    renderItem={renderItem}
+                    removeClippedSubviews={true}
+                    maxToRenderPerBatch={10}
+                    windowSize={10}
+                    initialNumToRender={10}
+                    getItemLayout={undefined}
+                  />
+                </DataTable>
               </View>
-              <DataTable style={styles.flex1}>
-                <DataTable.Header theme={theme}>
-                  <DataTable.Title theme={theme}>{countryLabel}</DataTable.Title>
-                  <DataTable.Title numeric theme={theme}>
-                    {dialCodeLabel}
-                  </DataTable.Title>
-                </DataTable.Header>
-                <FlatList
-                  keyboardShouldPersistTaps="handled"
-                  data={searchResult}
-                  keyExtractor={keyExtractor}
-                  renderItem={renderItem}
-                  removeClippedSubviews={true}
-                  maxToRenderPerBatch={10}
-                  windowSize={10}
-                  initialNumToRender={10}
-                  getItemLayout={undefined}
-                />
-              </DataTable>
             </Modal>
           </Portal>
         </View>
@@ -387,7 +388,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   flex1: {
-    flex: isIOS ? undefined : 1,
+    flex: 1,
   },
   modal: {
     marginTop: undefined,
@@ -396,8 +397,7 @@ const styles = StyleSheet.create({
   },
   countries: {
     paddingHorizontal: 16,
-    flex: isIOS ? undefined : 1,
-    marginBottom: isIOS ? 270 : undefined,
+    flex: 1,
     justifyContent: undefined,
   },
   searchbox: {
@@ -418,5 +418,8 @@ const styles = StyleSheet.create({
   searchIcon: {
     alignSelf: 'center',
     marginTop: 15,
+  },
+  modalContainer: {
+    height: '100%',
   },
 });
