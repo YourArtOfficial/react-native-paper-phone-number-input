@@ -31,6 +31,41 @@ npm install @artmajeur/react-native-paper-phone-number-input
 
 ---
 
+## 🌐 Custom Country Names (`getCountryName`)
+
+By default, country names come from `i18n-iso-countries`, whose data has some errors (for example, Portuguese swaps the two Congos). Both `PhoneNumberInput` and `CountryPicker` accept an optional `getCountryName` prop to supply your own names. It is used for the displayed names, the selected value, and search and sorting in the picker.
+
+```ts
+getCountryName?: (code: string, lang: string) => string | undefined;
+```
+
+`code` is the ISO 3166-1 alpha-2 country code (e.g. `"CD"`) and `lang` is the `lang` prop. Return `undefined` (or an empty string) to fall back to the `i18n-iso-countries` name.
+
+Example using CLDR names via `Intl.DisplayNames`:
+
+```tsx
+import { CountryPicker } from '@artmajeur/react-native-paper-phone-number-input';
+
+const getCountryName = (code: string, lang: string) => {
+  try {
+    return new Intl.DisplayNames([lang], { type: 'region' }).of(code);
+  } catch {
+    return undefined;
+  }
+};
+
+<CountryPicker
+  country={country}
+  setCountry={setCountry}
+  lang="pt"
+  getCountryName={getCountryName}
+/>;
+```
+
+Pass a stable function (defined outside the component or wrapped in `useCallback`) so the country list is not recomputed on every render.
+
+---
+
 ## 🚀 Publishing a New Version
 
 To update and publish a new version of the package:

@@ -28,12 +28,16 @@ import {
 } from 'react-native-paper';
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import translatedCountries from './data/translatedCountries';
 import { useCountriesList, useCountrySearch } from './hooks';
-import type { PhoneNumberInputProps, PhoneNumberInputRef, RNPaperTextInputRef } from './types';
+import type {
+  GetCountryName,
+  PhoneNumberInputProps,
+  PhoneNumberInputRef,
+  RNPaperTextInputRef,
+} from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
-import { getCountryByCode, liveFormatPhoneNumber } from './utils';
+import { getCountryByCode, liveFormatPhoneNumber, resolveCountryName } from './utils';
 
 // Memoized country row component to prevent unnecessary re-renders
 const CountryRow = memo(
@@ -43,17 +47,20 @@ const CountryRow = memo(
     theme,
     themeWithFlagsFont,
     lang,
+    getCountryName,
   }: {
     item: any;
     onPress: (item: any) => void;
     theme: any;
     themeWithFlagsFont: any;
     lang: string;
+    getCountryName?: GetCountryName;
   }) => (
     <DataTable.Row onPress={() => onPress(item)} theme={theme}>
-      <DataTable.Cell theme={themeWithFlagsFont}>{`${item.flag}     ${translatedCountries.getName(
+      <DataTable.Cell theme={themeWithFlagsFont}>{`${item.flag}     ${resolveCountryName(
         item.code,
-        lang
+        lang,
+        getCountryName
       )}`}</DataTable.Cell>
       <DataTable.Cell numeric theme={theme}>
         {item.dialCode}
@@ -89,6 +96,7 @@ export const PhoneNumberInput = memo(
         dialCodeLabel = '',
         error = false,
         errorIcon = undefined,
+        getCountryName,
         // rest of the props
         ...rest
       },
@@ -188,6 +196,7 @@ export const PhoneNumberInput = memo(
         searchQuery: debouncedSearchQuery,
         countriesList,
         lang,
+        getCountryName,
       });
 
       // Dynamic styles based on theme
@@ -277,9 +286,10 @@ export const PhoneNumberInput = memo(
             theme={theme}
             themeWithFlagsFont={themeWithFlagsFont}
             lang={lang}
+            getCountryName={getCountryName}
           />
         ),
-        [onSelectCountry, theme, themeWithFlagsFont, lang]
+        [onSelectCountry, theme, themeWithFlagsFont, lang, getCountryName]
       );
 
       // Memoize FlatList keyExtractor

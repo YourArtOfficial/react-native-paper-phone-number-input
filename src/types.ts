@@ -1,6 +1,12 @@
 import type { TextInput as NativeTextInput, StyleProp, ViewStyle } from 'react-native';
 import type { TextInputProps } from 'react-native-paper';
 
+/**
+ * Returns the display name of a country (ISO 3166-1 alpha-2 `code`) in `lang`.
+ * Return `undefined` to fall back to the bundled `i18n-iso-countries` name.
+ */
+export type GetCountryName = (code: string, lang: string) => string | undefined;
+
 export type $DeepPartial<T> = { [P in keyof T]?: $DeepPartial<T[P]> };
 
 export type RNPaperTextInputRef = Pick<
@@ -31,6 +37,7 @@ export interface PhoneNumberInputProps extends Omit<TextInputProps, 'value' | 'o
   dialCodeLabel?: string;
   error?: any;
   errorIcon?: JSX.Element;
+  getCountryName?: GetCountryName;
 }
 
 export interface CountryPickerRef {
@@ -49,4 +56,5 @@ export interface CountryPickerProps extends Omit<TextInputProps, 'value' | 'onCh
   lang?: string;
   placeholder?: string;
   searchLabel?: string;
+  getCountryName?: GetCountryName;
 }

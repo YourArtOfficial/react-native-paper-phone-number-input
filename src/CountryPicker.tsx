@@ -26,11 +26,11 @@ import {
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { countries } from './data/countries';
-import translatedCountries from './data/translatedCountries';
 import { useCountriesList, useCountrySearch } from './hooks';
 import type { CountryPickerProps, CountryPickerRef } from './types';
 import { useDebouncedValue } from './use-debounced-value';
 import useThemeWithFlagsFont from './useThemeWithFlagsFont';
+import { resolveCountryName } from './utils';
 
 export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
   (
@@ -49,6 +49,7 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
       lang = 'fr',
       placeholder = '',
       searchLabel = '',
+      getCountryName,
       // rest of the props
       ...rest
     },
@@ -114,6 +115,7 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
       searchQuery: debouncedSearchQuery,
       countriesList,
       lang,
+      getCountryName,
     });
 
     const handleCountrySelect = useCallback(
@@ -128,22 +130,22 @@ export const CountryPicker = forwardRef<CountryPickerRef, CountryPickerProps>(
       ({ item }: { item: any }) => (
         <DataTable.Row onPress={() => handleCountrySelect(item)} theme={theme}>
           <DataTable.Cell theme={themeWithFlagsFont}>
-            {`${item.flag}     ${translatedCountries.getName(item.code, lang) || item.name}`}
+            {`${item.flag}     ${resolveCountryName(item.code, lang, getCountryName) || item.name}`}
           </DataTable.Cell>
         </DataTable.Row>
       ),
-      [handleCountrySelect, theme, themeWithFlagsFont, lang]
+      [handleCountrySelect, theme, themeWithFlagsFont, lang, getCountryName]
     );
 
     const keyExtractor = useCallback((item: any) => item.code, []);
 
     const value = useMemo(() => {
       if (country && countryFlag) {
-        return `${countryFlag} ${translatedCountries.getName(country, lang)}`;
+        return `${countryFlag} ${resolveCountryName(country, lang, getCountryName)}`;
       }
 
       return placeholder;
-    }, [country, countryFlag, lang, placeholder]);
+    }, [country, countryFlag, lang, placeholder, getCountryName]);
 
     // Dynamic styles based on theme
     const dynamicStyles = useMemo(

@@ -1,6 +1,14 @@
 import parsePhoneNumberFromString, { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { countriesMap } from './data/countries';
+import translatedCountries from './data/translatedCountries';
+import type { GetCountryName } from './types';
+
+export const resolveCountryName = (
+  code: string,
+  lang: string,
+  getCountryName?: GetCountryName
+): string | undefined => getCountryName?.(code, lang) || translatedCountries.getName(code, lang);
 
 export const getCountryByCode = (code: string = '##') => {
   const country = countriesMap[code];
