@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import translatedCountries from '../data/translatedCountries';
+import type { GetCountryName } from '../types';
+import { resolveCountryName } from '../utils';
 
 interface Country {
   code: string;
@@ -13,11 +14,17 @@ interface UseCountrySearchProps {
   searchQuery: string;
   countriesList: Country[];
   lang: string;
+  getCountryName?: GetCountryName;
 }
 
 const removeAccents = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-export const useCountrySearch = ({ searchQuery, countriesList, lang }: UseCountrySearchProps) => {
+export const useCountrySearch = ({
+  searchQuery,
+  countriesList,
+  lang,
+  getCountryName,
+}: UseCountrySearchProps) => {
   return useMemo(() => {
     if (!searchQuery) {
       return countriesList;
@@ -28,7 +35,7 @@ export const useCountrySearch = ({ searchQuery, countriesList, lang }: UseCountr
     const filteredAndSorted = countriesList
       .map((country) => {
         const translatedName = removeAccents(
-          translatedCountries.getName(country.code, lang)?.toLowerCase() ||
+          resolveCountryName(country.code, lang, getCountryName)?.toLowerCase() ||
             country.name.toLowerCase()
         );
         const lowerCaseCode = country.code.toLowerCase();
@@ -54,11 +61,11 @@ export const useCountrySearch = ({ searchQuery, countriesList, lang }: UseCountr
         if (a.score !== b.score) {
           return b.score - a.score;
         }
-        const translatedA = translatedCountries.getName(a.code, lang) || a.name;
-        const translatedB = translatedCountries.getName(b.code, lang) || b.name;
+        const translatedA = resolveCountryName(a.code, lang, getCountryName) || a.name;
+        const translatedB = resolveCountryName(b.code, lang, getCountryName) || b.name;
         return translatedA.localeCompare(translatedB);
       });
 
     return filteredAndSorted;
-  }, [searchQuery, countriesList, lang]);
+  }, [searchQuery, countriesList, lang, getCountryName]);
 };

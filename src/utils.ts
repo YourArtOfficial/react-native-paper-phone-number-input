@@ -1,6 +1,16 @@
 import parsePhoneNumberFromString, { AsYouType, type CountryCode } from 'libphonenumber-js';
 
 import { countriesMap } from './data/countries';
+import translatedCountries from './data/translatedCountries';
+import type { GetCountryName } from './types';
+
+export const resolveCountryName = (
+  code: string,
+  lang: string,
+  getCountryName?: GetCountryName
+): string | undefined =>
+  // Callers may pass lowercase codes; resolvers like Intl.DisplayNames only accept uppercase ones.
+  getCountryName?.(code.toUpperCase(), lang) || translatedCountries.getName(code, lang);
 
 export const getCountryByCode = (code: string = '##') => {
   const country = countriesMap[code];
