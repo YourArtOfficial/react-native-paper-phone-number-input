@@ -2,8 +2,8 @@ import type { TextInput as NativeTextInput, StyleProp, ViewStyle } from 'react-n
 import type { TextInputProps } from 'react-native-paper';
 
 /**
- * Returns the display name of a country (ISO 3166-1 alpha-2 `code`) in `lang`.
- * Return `undefined` to fall back to the bundled `i18n-iso-countries` name.
+ * Returns the display name of a country (uppercase ISO 3166-1 alpha-2 `code`) in `lang`.
+ * Return `undefined` to fall back to the bundled `i18n-iso-countries` name. Must not throw.
  */
 export type GetCountryName = (code: string, lang: string) => string | undefined;
 

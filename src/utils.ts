@@ -8,7 +8,9 @@ export const resolveCountryName = (
   code: string,
   lang: string,
   getCountryName?: GetCountryName
-): string | undefined => getCountryName?.(code, lang) || translatedCountries.getName(code, lang);
+): string | undefined =>
+  // Callers may pass lowercase codes; resolvers like Intl.DisplayNames only accept uppercase ones.
+  getCountryName?.(code.toUpperCase(), lang) || translatedCountries.getName(code, lang);
 
 export const getCountryByCode = (code: string = '##') => {
   const country = countriesMap[code];

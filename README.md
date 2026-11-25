@@ -39,16 +39,28 @@ By default, country names come from `i18n-iso-countries`, whose data has some er
 getCountryName?: (code: string, lang: string) => string | undefined;
 ```
 
-`code` is the ISO 3166-1 alpha-2 country code (e.g. `"CD"`) and `lang` is the `lang` prop. Return `undefined` (or an empty string) to fall back to the `i18n-iso-countries` name.
+`code` is the uppercase ISO 3166-1 alpha-2 country code (e.g. `"CD"`) and `lang` is the `lang` prop. Return `undefined` (or an empty string) to fall back to the `i18n-iso-countries` name. The function is called during render and while sorting search results, so it must not throw and should be fast.
 
 Example using CLDR names via `Intl.DisplayNames`:
 
 ```tsx
 import { CountryPicker } from '@artmajeur/react-native-paper-phone-number-input';
 
+const displayNamesByLang = new Map<string, Intl.DisplayNames>();
+
 const getCountryName = (code: string, lang: string) => {
+  // Hermes may not implement Intl.DisplayNames.
+  if (typeof Intl.DisplayNames !== 'function') {
+    return undefined;
+  }
   try {
-    return new Intl.DisplayNames([lang], { type: 'region' }).of(code);
+    let displayNames = displayNamesByLang.get(lang);
+    if (!displayNames) {
+      // fallback: 'none' returns undefined for unknown codes instead of echoing the code.
+      displayNames = new Intl.DisplayNames([lang], { type: 'region', fallback: 'none' });
+      displayNamesByLang.set(lang, displayNames);
+    }
+    return displayNames.of(code);
   } catch {
     return undefined;
   }

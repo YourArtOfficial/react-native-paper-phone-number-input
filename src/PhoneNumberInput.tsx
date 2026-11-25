@@ -57,11 +57,9 @@ const CountryRow = memo(
     getCountryName?: GetCountryName;
   }) => (
     <DataTable.Row onPress={() => onPress(item)} theme={theme}>
-      <DataTable.Cell theme={themeWithFlagsFont}>{`${item.flag}     ${resolveCountryName(
-        item.code,
-        lang,
-        getCountryName
-      )}`}</DataTable.Cell>
+      <DataTable.Cell theme={themeWithFlagsFont}>{`${item.flag}     ${
+        resolveCountryName(item.code, lang, getCountryName) || item.name
+      }`}</DataTable.Cell>
       <DataTable.Cell numeric theme={theme}>
         {item.dialCode}
       </DataTable.Cell>
